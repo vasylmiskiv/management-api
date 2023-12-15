@@ -1,5 +1,12 @@
-import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  BaseEntity,
+  Column,
+  Entity,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import * as bcrypt from 'bcrypt';
+import { Task } from 'src/tasks/task.entity';
 
 @Entity()
 // @Unique(['email'])
@@ -18,6 +25,9 @@ export class User extends BaseEntity {
 
   @Column()
   salt: string;
+
+  @OneToMany(() => Task, (task) => task.user)
+  tasks: Task[];
 
   async validatePassword(password: string): Promise<boolean> {
     const hash = await bcrypt.hash(password, this.salt);

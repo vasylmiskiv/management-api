@@ -4,6 +4,7 @@ import { Repository, DataSource } from 'typeorm';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { TaskStatus } from './task-status.enum';
 import { GetTasksFilterDto } from './dto/get-tasks-filter.dto';
+import { User } from 'src/auth/user.entity';
 
 @Injectable()
 export class TaskRepository extends Repository<Task> {
@@ -11,10 +12,14 @@ export class TaskRepository extends Repository<Task> {
     super(Task, dataSource.createEntityManager());
   }
 
-  async getTasks(dto: GetTasksFilterDto) {
+  async getTasks(dto: GetTasksFilterDto, user: User) {
     const { status, search } = dto;
 
     const query = this.createQueryBuilder('task');
+
+    console.log(user.id);
+
+    query.where('task.userId = :userId', { userId: user.id });
 
     if (status) {
       query.andWhere('task.status = :status', { status });
@@ -32,8 +37,8 @@ export class TaskRepository extends Repository<Task> {
     return tasks;
   }
 
-  async getTaskById(id: number) {
-    const task = await this.findOne({ where: { id } });
+  async getTaskById(id: number, user: User) {
+    const task = await this.findOne({ where: { id, userId: user.id } });
 
     if (!task) {
       throw new NotFoundException(`Task with id ${id} has not been found`);
@@ -42,7 +47,7 @@ export class TaskRepository extends Repository<Task> {
     return task;
   }
 
-  async createTask(dto: CreateTaskDto): Promise<Task> {
+  async createTask(dto: CreateTaskDto, user: User): Promise<Task> {
     const { title, description } = dto;
 
     const task = new Task();
@@ -51,7 +56,11 @@ export class TaskRepository extends Repository<Task> {
     task.description = description;
     task.status = TaskStatus.OPEN;
 
+    task.user = user;
+
     await task.save();
+
+    delete task.user;
 
     return task;
   }

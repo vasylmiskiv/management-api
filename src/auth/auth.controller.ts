@@ -1,7 +1,9 @@
 import {
   Body,
   Controller,
+  HttpStatus,
   Post,
+  Res,
   UseGuards,
   ValidationPipe,
 } from '@nestjs/common';
@@ -17,8 +19,15 @@ export class AuthController {
   constructor(private authSerivce: AuthService) {}
 
   @Post('/signup')
-  signUp(@Body(ValidationPipe) dto: AuthCredentialsDto): Promise<void> {
-    return this.authSerivce.signUp(dto);
+  signUp(
+    @Body(ValidationPipe) dto: AuthCredentialsDto,
+    @Res() res,
+  ): Promise<User> {
+    this.authSerivce.signUp(dto);
+
+    return res.status(HttpStatus.CREATED).json({
+      message: 'User created',
+    });
   }
 
   @Post('/signin')
