@@ -18,7 +18,7 @@ export class UserRepository extends Repository<User> {
     });
   }
 
-  async signUp(dto: AuthCredentialsDto): Promise<void> {
+  async signUp(dto: AuthCredentialsDto): Promise<User> {
     const { email, username, password } = dto;
 
     const isUserExist = await User.findOne({
@@ -38,6 +38,8 @@ export class UserRepository extends Repository<User> {
 
     try {
       await user.save();
+
+      return user;
     } catch (error) {
       console.log(error);
       if (error.code === '23505') {
