@@ -13,14 +13,14 @@ import { User } from './user.entity';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private authSerivce: AuthService) {}
+  constructor(private authService: AuthService) {}
 
   @Post('/signup')
   signUp(
     @Body(ValidationPipe) dto: AuthCredentialsDto,
     @Res() res,
   ): Promise<User> {
-    this.authSerivce.signUp(dto);
+    this.authService.signUp(dto);
 
     return res.status(HttpStatus.CREATED).json({
       message: 'User created',
@@ -29,7 +29,7 @@ export class AuthController {
 
   @Post('/signin')
   signIn(@Body(ValidationPipe) dto: AuthCredentialsDto): Promise<AccessToken> {
-    return this.authSerivce.signIn(dto);
+    return this.authService.signIn(dto);
   }
 
   // @Post('/test')
