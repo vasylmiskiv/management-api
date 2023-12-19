@@ -20,8 +20,12 @@ export class TasksService {
     return task;
   }
 
-  async updateTaskStatus(taskId: number, status: TaskStatus): Promise<Task> {
-    const task = await this.getTaskById(taskId);
+  async updateTaskStatus(
+    taskId: number,
+    status: TaskStatus,
+    user: User,
+  ): Promise<Task> {
+    const task = await this.getTaskById(taskId, user);
 
     task.status = status;
     task.save();
@@ -33,7 +37,7 @@ export class TasksService {
     return this.taskRepository.createTask(dto, user);
   }
 
-  deleteTask(taskId: number): Promise<number> {
-    return this.taskRepository.deleteTask(taskId);
+  deleteTask(taskId: number, user: User): Promise<number> {
+    return this.taskRepository.deleteTask(taskId, user);
   }
 }
