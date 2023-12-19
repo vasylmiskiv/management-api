@@ -41,7 +41,6 @@ export class UserRepository extends Repository<User> {
 
       return user;
     } catch (error) {
-      console.log(error);
       if (error.code === '23505') {
         throw new ConflictException('User with this email already exists');
       } else {

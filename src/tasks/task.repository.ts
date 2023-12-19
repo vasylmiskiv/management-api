@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { Task } from './task.entity';
 import { Repository, DataSource } from 'typeorm';
 import { CreateTaskDto } from './dto/create-task.dto';
@@ -8,6 +13,8 @@ import { User } from 'src/auth/user.entity';
 
 @Injectable()
 export class TaskRepository extends Repository<Task> {
+  private logger = new Logger('taskRepository');
+
   constructor(private dataSource: DataSource) {
     super(Task, dataSource.createEntityManager());
   }
@@ -16,8 +23,6 @@ export class TaskRepository extends Repository<Task> {
     const { status, search } = dto;
 
     const query = this.createQueryBuilder('task');
-
-    console.log(user.id);
 
     query.where('task.userId = :userId', { userId: user.id });
 
@@ -32,9 +37,18 @@ export class TaskRepository extends Repository<Task> {
       );
     }
 
-    const tasks = await query.getMany();
+    try {
+      const tasks = await query.getMany();
 
-    return tasks;
+      return tasks;
+    } catch (err) {
+      this.logger.error(
+        `Failed to get tasks for user ${JSON.stringify(dto)}`,
+        err.stack,
+      );
+
+      throw new InternalServerErrorException();
+    }
   }
 
   async getTaskById(id: number, user: User) {
@@ -58,14 +72,25 @@ export class TaskRepository extends Repository<Task> {
 
     task.user = user;
 
-    await task.save();
+    try {
+      await task.save();
+    } catch (err) {
+      this.logger.error(
+        `Failed to create a task for user ${user.username}. Data: ${dto}`,
+        err.stack,
+      );
+
+      throw new InternalServerErrorException();
+    }
 
     delete task.user;
 
     return task;
   }
 
-  async deleteTask(taskId: number): Promise<number> {
+  async deleteTask(taskId: number, user: User): Promise<number> {
+    await this.getTaskById(taskId, user);
+
     const result = await this.delete(taskId);
 
     if (!result.affected) {
