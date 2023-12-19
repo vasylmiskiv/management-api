@@ -9,6 +9,10 @@ export class TaskStatusValidationPipe implements PipeTransform {
   ];
 
   private isStatusValid(status: any) {
+    if (!status) {
+      throw new BadRequestException(`There is no a valid status`);
+    }
+
     status = status.toUpperCase();
 
     const isExists = this.allowedStatuses.includes(status);

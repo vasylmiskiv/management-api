@@ -4,23 +4,28 @@ import { GetTasksFilterDto } from './dto/get-tasks-filter.dto';
 import { Task } from './task.entity';
 import { TaskStatus } from './task-status.enum';
 import { TaskRepository } from './task.repository';
+import { User } from 'src/auth/user.entity';
 
 @Injectable()
 export class TasksService {
   constructor(private taskRepository: TaskRepository) {}
 
-  async getTasks(dto: GetTasksFilterDto): Promise<Task[]> {
-    return await this.taskRepository.getTasks(dto);
+  async getTasks(dto: GetTasksFilterDto, user: User): Promise<Task[]> {
+    return await this.taskRepository.getTasks(dto, user);
   }
 
-  async getTaskById(id: number): Promise<Task> {
-    const task = await this.taskRepository.getTaskById(id);
+  async getTaskById(id: number, user?: User): Promise<Task> {
+    const task = await this.taskRepository.getTaskById(id, user);
 
     return task;
   }
 
-  async updateTaskStatus(taskId: number, status: TaskStatus): Promise<Task> {
-    const task = await this.getTaskById(taskId);
+  async updateTaskStatus(
+    taskId: number,
+    status: TaskStatus,
+    user: User,
+  ): Promise<Task> {
+    const task = await this.getTaskById(taskId, user);
 
     task.status = status;
     task.save();
@@ -28,11 +33,11 @@ export class TasksService {
     return task;
   }
 
-  createTask(dto: CreateTaskDto): Promise<Task> {
-    return this.taskRepository.createTask(dto);
+  createTask(dto: CreateTaskDto, user: User): Promise<Task> {
+    return this.taskRepository.createTask(dto, user);
   }
 
-  deleteTask(taskId: number): Promise<number> {
-    return this.taskRepository.deleteTask(taskId);
+  deleteTask(taskId: number, user: User): Promise<number> {
+    return this.taskRepository.deleteTask(taskId, user);
   }
 }
